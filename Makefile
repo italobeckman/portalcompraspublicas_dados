@@ -3,7 +3,7 @@
 # ==========================================
 # Facilita a instalação, população de dados, execução da API e exportação de documentação acadêmica.
 
-.PHONY: help install db-real db-mock run docs stats clean
+.PHONY: help install db-real db-mock run docs stats dashboard clean
 
 # Target padrão: exibe o menu de ajuda
 help:
@@ -19,10 +19,10 @@ help:
 	@echo "  make clean           Remove o banco de dados local SQLite e arquivos temporários de docs"
 	@echo "========================================================================="
 
-# Instalação automatizada das dependências
+# Instalação automatizada das dependências (incluindo dashboard e estatística)
 install:
 	@echo "Instalando dependências do projeto..."
-	pip install fastapi uvicorn sqlalchemy pydantic scipy pandas requests
+	pip install fastapi uvicorn sqlalchemy pydantic scipy pandas requests matplotlib seaborn streamlit plotly
 
 # Carga de dados reais — recorte temporal 2024-2026 (pós-Lei 14.133/2021)
 db-real:
@@ -38,6 +38,11 @@ db-mock:
 run:
 	@echo "Iniciando servidor de API FastAPI local..."
 	python -m uvicorn src.api:app --host 127.0.0.1 --port 8000 --reload
+
+# Inicializa o painel interativo Streamlit
+dashboard:
+	@echo "Iniciando painel Streamlit..."
+	python -m streamlit run src/dashboard.py --server.port 8501
 
 # Exporta a especificação completa de documentação da API em JSON
 docs:

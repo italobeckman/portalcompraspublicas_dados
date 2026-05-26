@@ -7,8 +7,9 @@ import seaborn as sns
 from scipy import stats
 
 # Configurações de diretório e estilo
-DB_PATH = r"c:\Users\Usuario\Documents\S.i\6\Governanca\portalcompraspublicas_dados\compras_governanca.db"
-OUTPUT_DIR = r"C:\Users\Usuario\.gemini\antigravity\brain\c03b5a55-e02e-49ac-80af-bbd4bb103646"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DB_PATH = os.path.join(BASE_DIR, "compras_governanca.db")
+OUTPUT_DIR = os.path.join(BASE_DIR, "scratch", "plots")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 sns.set_theme(style="whitegrid")
