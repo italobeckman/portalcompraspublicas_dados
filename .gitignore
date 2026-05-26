@@ -53,9 +53,6 @@ $RECYCLE.BIN/
 .DS_Store
 
 # Gráficos e relatórios gerados localmente (opcional, remova se desejar versionar imagens)
-*.png
-*.jpg
-*.jpeg
-*.pdf
-*.svg
+/scratch/plots/*
 /skills/*
+.agent

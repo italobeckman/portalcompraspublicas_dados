@@ -31,7 +31,13 @@ Prepare o ambiente virtual Python e instale os pacotes requeridos:
 make install
 ```
 
-### 2. Inicializar o Dashboard
+### 2. Carregar e Migrar os Dados Reais
+Antes de executar o painel, é necessário popular o banco de dados local (`compras_governanca.db`) com os dados históricos e verídicos extraídos da API oficial do Compras.gov.br:
+```bash
+make db-real
+```
+
+### 3. Inicializar o Dashboard
 Rode a interface interativa no seu navegador local:
 ```bash
 make dashboard

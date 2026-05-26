@@ -375,10 +375,92 @@ with tab_graficos:
         st.markdown("""
         > **Interpretação Econômica**:
         > *   **HHI (Herfindahl-Hirschman Index)**: Penaliza mercados dominados por empresas gigantes. Quanto maior o índice, menor a concorrência. Níveis acima de **2.500** representam riscos críticos de monopólio ou oligopólio severo.
-        > *   **CR4**: Revela o poder combinado das 4 maiores prestadoras de serviço. Se o CR4 atinge $80\%$, quatro empresas possuem virtualmente o controle de todo o recurso gasto sob aquele CATSER.
+        > *   **CR4**: Revela o poder combinado das 4 maiores prestadoras de serviço. Se o CR4 atinge $80\\%$, quatro empresas possuem virtualmente o controle de todo o recurso gasto sob aquele CATSER.
         """)
 
+        # Adiciona a nova seção para detalhar as Stacks
+        st.markdown("---")
+        st.subheader("Concentração por Stack Tecnológica (Códigos CATSER)")
+        st.markdown("""
+            Esta seção detalha os índices de concentração (HHI, CR4, Gini) e a quantidade de concorrentes ativos
+            para cada pilha tecnológica (*stack*) e macroatividade registrada na base de dados histórica.
+        """)
+
+        if df_hist.empty:
+            st.warning("Não há dados históricos de concentração disponíveis no banco de dados.")
+        else:
+            # Filtrar df_hist com base nos CATSERs e anos selecionados na barra lateral
+            df_hist_f = df_hist[
+                (df_hist["ano"].isin(anos_filtrados)) &
+                (df_hist["codigo_catser"].isin(catser_selecionados)) &
+                (df_hist["tipo_grupo"].isin(grupos_selecionados))
+            ].copy()
+
+            if df_hist_f.empty:
+                st.warning("Nenhum dado histórico atende aos filtros de barra lateral selecionados.")
+            else:
+                # Criar coluna formatada para exibição no gráfico
+                df_hist_f["stack_label"] = df_hist_f.apply(
+                    lambda r: f"{r['codigo_catser']} - {str(r['descricao_catser']).split(' - ')[-1] if ' - ' in str(r['descricao_catser']) else str(r['descricao_catser'])} ({'Dev' if r['tipo_grupo'] == 'Desenvolvimento' else 'Manut'})",
+                    axis=1
+                )
+                df_hist_f["ano_str"] = df_hist_f["ano"].astype(str)
+
+                # Plotar gráfico de barras de HHI por Stack e Ano
+                fig_catser = px.bar(
+                    df_hist_f.sort_values(by=["codigo_catser", "ano"]),
+                    x="stack_label",
+                    y="hhi",
+                    color="ano_str",
+                    barmode="group",
+                    labels={"stack_label": "Stack Tecnológica (CATSER)", "hhi": "Índice HHI", "ano_str": "Ano"},
+                    color_discrete_map={"2024": "#60A5FA", "2025": "#2563EB", "2026": "#1E3A8A"},
+                    template="plotly_white"
+                )
+                
+                fig_catser.update_layout(
+                    title=dict(text="<b>Índice HHI por Stack Tecnológica e Ano de Assinatura</b>", font=dict(size=14)),
+                    xaxis=dict(title=None, tickangle=45),
+                    yaxis=dict(title="HHI (Escala 0-10.000)", range=[0, 10500]),
+                    legend=dict(title="Ano", orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                    margin=dict(l=40, r=40, t=60, b=120)
+                )
+
+                # Linhas de referência
+                fig_catser.add_hline(y=1500, line_dash="dash", line_color="#808080", opacity=0.7)
+                fig_catser.add_hline(y=2500, line_dash="dash", line_color="#ff4b4b", opacity=0.7)
+
+                st.plotly_chart(fig_catser, use_container_width=True)
+
+                # Tabela de dados detalhados
+                st.markdown("**Tabela de Métricas por Stack (CATSER)**")
+                df_table = df_hist_f.copy()
+                df_table["faturamento_m"] = df_table["faturamento_total_mercado"] / 1e6
+                df_table = df_table.rename(columns={
+                    "ano": "Ano",
+                    "codigo_catser": "CATSER",
+                    "descricao_catser": "Descrição da Stack",
+                    "tipo_grupo": "Macroatividade",
+                    "hhi": "HHI",
+                    "cr4": "CR4 (%)",
+                    "gini": "Gini",
+                    "total_fornecedores": "Fornecedores"
+                })
+
+                st.dataframe(
+                    df_table[["Ano", "CATSER", "Descrição da Stack", "Macroatividade", "faturamento_m", "HHI", "CR4 (%)", "Gini", "Fornecedores"]].sort_values(by=["CATSER", "Ano"]),
+                    use_container_width=True,
+                    column_config={
+                        "faturamento_m": st.column_config.NumberColumn(label="Volume Licitado", format="R$ %.2f M"),
+                        "HHI": st.column_config.NumberColumn(format="%.1f"),
+                        "CR4 (%)": st.column_config.NumberColumn(format="%.2f %%"),
+                        "Gini": st.column_config.NumberColumn(format="%.3f")
+                    },
+                    hide_index=True
+                )
+
 # ------------------------------------------
+
 # TAB: DOMINÂNCIA DE FORNECEDORES
 # ------------------------------------------
 with tab_fornecedores:

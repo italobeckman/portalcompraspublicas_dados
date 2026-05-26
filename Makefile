@@ -39,10 +39,12 @@ run:
 	@echo "Iniciando servidor de API FastAPI local..."
 	python -m uvicorn src.api:app --host 127.0.0.1 --port 8000 --reload
 
+PORT ?= 8501
+
 # Inicializa o painel interativo Streamlit
 dashboard:
-	@echo "Iniciando painel Streamlit..."
-	python -m streamlit run src/dashboard.py --server.port 8501
+	@echo "Iniciando painel Streamlit na porta $(PORT)..."
+	python -m streamlit run src/dashboard.py --server.port $(PORT)
 
 # Exporta a especificação completa de documentação da API em JSON
 docs:
